@@ -17,48 +17,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('btnGuardar').addEventListener('click', async (event) => {
+        event.preventDefault(); // Evita el envío del formulario
 
-// Guardar producto
-document.getElementById('btnGuardar').addEventListener('click', async () => {
-    const nombre = document.getElementById('inputNombre').value;
-    const descripcion = document.getElementById('inputDescripcion').value;
-    const precio = parseFloat(document.getElementById('inputPrecio').value);
-    const categoria = document.getElementById('inputCategoria').value; // Valor seleccionado de la categoría
-    const file = document.getElementById('inputFile').files[0];
+        const nombre = document.getElementById('inputNombre').value;
+        const descripcion = document.getElementById('inputDescripcion').value;
+        const precio = parseFloat(document.getElementById('inputPrecio').value);
+        const categoria = document.getElementById('inputCategoria').value;
+        const file = document.getElementById('inputFile').files[0];
 
-    // Validación de campos
-    if (!nombre || !descripcion || !precio || !categoria) {
-        alert("Por favor llena todos los campos.");
-        return;
-    }
-
-    try {
-        let imageUrl = '';
-        // Subir imagen a Firebase Storage
-        if (file) {
-            const storageRef = ref(storage, `productos/${file.name}`);
-            await uploadBytes(storageRef, file);
-            imageUrl = await getDownloadURL(storageRef);
+        // Validación de campos
+        if (!nombre || !descripcion || !precio || !categoria) {
+            alert("Por favor llena todos los campos.");
+            return;
         }
 
-        // Guardar producto en Firestore
-        await addDoc(collection(db, 'productos'), {
-            nombre: nombre,
-            descripcion: descripcion,
-            precio: precio,
-            categoria: categoria, // Guardar categoría
-            imageUrl: imageUrl,
-        });
+        try {
+            let imageUrl = '';
+            // Subir imagen a Firebase Storage
+            if (file) {
+                const storageRef = ref(storage, `productos/${file.name}`);
+                await uploadBytes(storageRef, file);
+                imageUrl = await getDownloadURL(storageRef);
+            }
 
-        // Limpiar campos después de guardar
-        document.getElementById('inputNombre').value = '';
-        document.getElementById('inputDescripcion').value = '';
-        document.getElementById('inputPrecio').value = '';
-        document.getElementById('inputCategoria').value = '';
-        document.getElementById('inputFile').value = '';
+            // Guardar producto en Firestore
+            await addDoc(collection(db, 'productos'), {
+                nombre: nombre,
+                descripcion: descripcion,
+                precio: precio,
+                categoria: categoria,
+                imageUrl: imageUrl,
+            });
 
-        alert("Producto guardado con éxito!");
-    } catch (e) {
-        console.error("Error añadiendo el producto: ", e);
-    }
+            // Limpiar campos después de guardar
+            document.getElementById('inputNombre').value = '';
+            document.getElementById('inputDescripcion').value = '';
+            document.getElementById('inputPrecio').value = '';
+            document.getElementById('inputCategoria').value = '';
+            document.getElementById('inputFile').value = '';
+
+            alert("Producto guardado con éxito!");
+        } catch (e) {
+            console.error("Error añadiendo el producto: ", e);
+        }
+    });
 });
+
